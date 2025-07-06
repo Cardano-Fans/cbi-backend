@@ -96,13 +96,6 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- Yaci Core -->
-        <dependency>
-            <groupId>com.bloxbean.cardano</groupId>
-            <artifactId>yaci</artifactId>
-            <version>0.1.4</version>
-        </dependency>
-
         <dependency>
             <groupId>com.bloxbean.cardano</groupId>
             <artifactId>yaci-store-spring-boot-starter</artifactId>

@@ -36,7 +36,7 @@ public class TransactionEventListener {
                 return; // No transactions to process
             }
 
-            log.debug("Processing transaction event with {} transactions in block {}",
+            log.info("Processing transaction event with {} transactions in block {}",
                      transactionCount, event.getMetadata().getBlockHash());
             
             // Update daily count
@@ -61,7 +61,7 @@ public class TransactionEventListener {
         dayCount.setLastUpdated(System.currentTimeMillis());
         
         transactionDayCountRepository.save(dayCount);
-        log.trace("Updated day count for {}: {} (+{})", date, dayCount.getTransactionCount(), transactionCount);
+        log.info("Updated day count for {}: {} (+{})", date, dayCount.getTransactionCount(), transactionCount);
     }
 
     private void updateEpochCount(TransactionEvent event, int transactionCount) {

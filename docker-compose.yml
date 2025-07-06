@@ -12,12 +12,12 @@ services:
       - "8081:8081"  # Management/actuator port
     environment:
       # Database configuration
-      DB_HOST: ${DB_HOST:-localhost}
-      DB_PORT: ${DB_PORT:-5433}
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_NAME: ${DB_NAME:-cbi_backend}
-      DB_SCHEMA: ${DB_SCHEMA:-mainnet}
+      DB_SCHEMA: ${DB_SCHEMA:-public}
       DB_USERNAME: ${DB_USERNAME:-user}
-      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_PASSWORD: ${DB_PASSWORD:-password123}
 
       # Spring profiles
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
