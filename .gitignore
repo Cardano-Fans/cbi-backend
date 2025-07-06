@@ -1,0 +1,94 @@
+# Java & Maven
+target/
+*.jar
+*.war
+*.ear
+*.class
+*.log
+*.tmp
+*.temp
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment and configuration
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+application-local.properties
+application-local.yml
+
+# Logs
+logs/
+*.log
+*.log.*
+*.gz
+
+
+# Spring Boot
+spring-boot-*.log
+application.pid
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Docker
+.docker/
+
+# Test reports
+test-results/
+coverage/
+
+# JVM crash logs
+hs_err_pid*
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+
+# Compiled Python files (if any scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local configuration overrides
+config/local/

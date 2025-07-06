@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  # CBI Microservice Application
+  cbi-microservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cbi-microservice
+    ports:
+      - "8080:8080"  # Main application port
+      - "8081:8081"  # Management/actuator port
+    environment:
+      # Database configuration
+      DB_HOST: ${DB_HOST:-localhost}
+      DB_PORT: ${DB_PORT:-5433}
+      DB_NAME: ${DB_NAME:-yaci_indexer}
+      DB_SCHEMA: ${DB_SCHEMA:-mainnet}
+      DB_USERNAME: ${DB_USERNAME:-user}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # Server configuration
+      SERVER_PORT: 8080
+      MANAGEMENT_PORT: 8081
+
+      # Cache configuration
+      CACHE_TTL: ${CACHE_TTL:-900}
+      CACHE_MAX_SIZE: ${CACHE_MAX_SIZE:-100}
+
+      # Refresh configuration
+      REFRESH_INTERVAL: ${REFRESH_INTERVAL:-900000}
+
+      # Yaci Store Core configuration
+      CARDANO_NODE_HOST: ${CARDANO_NODE_HOST:-localhost}
+      CARDANO_NODE_PORT: ${CARDANO_NODE_PORT:-3001}
+      CARDANO_PROTOCOL_MAGIC: ${CARDANO_PROTOCOL_MAGIC:-764824073}
+      CARDANO_NODE_SOCKET_PATH: ${CARDANO_NODE_SOCKET_PATH:/opt/cardano/cnode/sockets/node0.socket}
+      CARDANO_N2C_PORT: ${CARDANO_N2C_PORT:-3001}
+      SYNC_START_SLOT: ${SYNC_START_SLOT:-0}
+      
+      # Core Store (minimal footprint)
+      CORE_STORE_ENABLED: ${CORE_STORE_ENABLED:-true}
+      INCLUDE_BLOCK_CBOR: ${INCLUDE_BLOCK_CBOR:-false}
+      INCLUDE_TRANSACTION_CBOR: ${INCLUDE_TRANSACTION_CBOR:-false}
+      
+      # Event Configuration
+      EVENTS_ENABLED: ${EVENTS_ENABLED:-true}
+      TRANSACTION_EVENTS: ${TRANSACTION_EVENTS:-true}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SQL_LOG_LEVEL: ${SQL_LOG_LEVEL:-WARN}
+
+      # JVM options
+      JAVA_OPTS: "-Xmx1g -Xms512m -XX:+UseG1GC"
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - postgres
+    networks:
+      - cbi-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: cbi-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-yaci_indexer}
+      POSTGRES_USER: ${DB_USERNAME:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database_setup.sql:/docker-entrypoint-initdb.d/01-setup.sql:ro
+    restart: unless-stopped
+    networks:
+      - cbi-network
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cbi-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - cbi-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cbi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - cbi-network
+
+volumes:
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  cbi-network:
+    driver: bridge
