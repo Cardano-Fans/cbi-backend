@@ -1,7 +1,7 @@
 package de.crfa.cbi.controller;
 
 import de.crfa.cbi.service.TransactionCountService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +12,16 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/transactions")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class TransactionCountController {
 
-    @Autowired
-    private TransactionCountService transactionCountService;
+    private final TransactionCountService transactionCountService;
     
     @GetMapping("/count/date/{date}")
     public ResponseEntity<Map<String, Long>> getTransactionCountByDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         Map<String, Long> result = transactionCountService.getTransactionCountsByDate(date);
+
         return ResponseEntity.ok(result);
     }
     

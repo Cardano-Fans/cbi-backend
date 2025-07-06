@@ -4,6 +4,7 @@ import de.crfa.cbi.entity.TransactionDayCount;
 import de.crfa.cbi.entity.TransactionEpochCount;
 import de.crfa.cbi.repository.TransactionDayCountRepository;
 import de.crfa.cbi.repository.TransactionEpochCountRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class TransactionCountService {
     
-    @Autowired
-    private TransactionDayCountRepository transactionDayCountRepository;
-    
-    @Autowired
-    private TransactionEpochCountRepository transactionEpochCountRepository;
+    private final TransactionDayCountRepository transactionDayCountRepository;
+    private final TransactionEpochCountRepository transactionEpochCountRepository;
     
     public Map<String, Long> getTransactionCountsByDate(LocalDate date) {
         Map<String, Long> result = new HashMap<>();
