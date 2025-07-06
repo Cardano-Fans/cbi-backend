@@ -1,24 +1,26 @@
 # Multi-stage build for Spring Boot microservice
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:24-jdk-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+# Copy pom.xml first
+COPY pom.xml ./
+
+# Use Maven directly instead of wrapper
+RUN apk add --no-cache maven
 
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
-RUN ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src/ ./src/
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Production stage
-FROM eclipse-temurin:21-jre-alpine AS production
+FROM eclipse-temurin:24-jre-alpine AS production
 
 # Create app user
 RUN addgroup -g 1001 -S appgroup && \

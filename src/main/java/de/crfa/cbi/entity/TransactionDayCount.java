@@ -3,6 +3,7 @@ package de.crfa.cbi.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class TransactionDayCount {
     
     @Id
@@ -24,33 +26,11 @@ public class TransactionDayCount {
     @Column(name = "last_updated")
     private Long lastUpdated;
     
-    public TransactionDayCount(LocalDate date, Long transactionCount) {
+    public TransactionDayCount(LocalDate date,
+                               Long transactionCount) {
         this.date = date;
         this.transactionCount = transactionCount;
         this.lastUpdated = System.currentTimeMillis();
     }
 
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public Long getTransactionCount() {
-        return transactionCount;
-    }
-
-    public void setTransactionCount(Long transactionCount) {
-        this.transactionCount = transactionCount;
-    }
-
-    public Long getLastUpdated() {
-        return lastUpdated;
-    }
-
-    public void setLastUpdated(Long lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
 }
