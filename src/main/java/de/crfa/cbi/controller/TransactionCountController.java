@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -67,6 +68,13 @@ public class TransactionCountController {
         transactionCountService.resetEpochCountsForRange(startEpoch, endEpoch);
 
         return ResponseEntity.ok("Epoch counts reset successfully");
+    }
+    
+    @GetMapping("/epochs/with-data")
+    public ResponseEntity<List<Integer>> getEpochsWithData() {
+        List<Integer> epochs = transactionCountService.getEpochsWithData();
+
+        return ResponseEntity.ok(epochs);
     }
 
 }

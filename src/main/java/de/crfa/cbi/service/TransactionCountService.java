@@ -5,8 +5,8 @@ import de.crfa.cbi.entity.TransactionEpochCount;
 import de.crfa.cbi.repository.TransactionDayCountRepository;
 import de.crfa.cbi.repository.TransactionEpochCountRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TransactionCountService {
     
     private final TransactionDayCountRepository transactionDayCountRepository;
@@ -55,7 +56,8 @@ public class TransactionCountService {
         }
         return result;
     }
-    
+
+    @Transactional
     public void resetDayCountsForDateRange(LocalDate startDate, LocalDate endDate) {
         List<TransactionDayCount> existingCounts = transactionDayCountRepository.findByDateBetween(startDate, endDate);
         for (TransactionDayCount count : existingCounts) {
@@ -64,7 +66,8 @@ public class TransactionCountService {
             transactionDayCountRepository.save(count);
         }
     }
-    
+
+    @Transactional
     public void resetEpochCountsForRange(Integer startEpoch, Integer endEpoch) {
         List<TransactionEpochCount> existingCounts = transactionEpochCountRepository.findByEpochBetween(startEpoch, endEpoch);
         for (TransactionEpochCount count : existingCounts) {
@@ -73,4 +76,9 @@ public class TransactionCountService {
             transactionEpochCountRepository.save(count);
         }
     }
+    
+    public List<Integer> getEpochsWithData() {
+        return transactionEpochCountRepository.findEpochsWithNonZeroTransactions();
+    }
+
 }
