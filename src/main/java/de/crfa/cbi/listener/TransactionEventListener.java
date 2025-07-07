@@ -6,7 +6,6 @@ import de.crfa.cbi.entity.TransactionEpochCount;
 import de.crfa.cbi.repository.TransactionDayCountRepository;
 import de.crfa.cbi.repository.TransactionEpochCountRepository;
 import de.crfa.cbi.repository.TransactionSummaryRepository;
-import de.crfa.cbi.service.TransactionCountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,6 @@ public class TransactionEventListener {
     
     @Autowired
     private TransactionSummaryRepository transactionSummaryRepository;
-    
-    @Autowired
-    private TransactionCountService transactionCountService;
 
     @EventListener
     @Transactional
@@ -117,9 +113,6 @@ public class TransactionEventListener {
             
             // Save the updated entity
             transactionSummaryRepository.save(summary);
-            
-            // Evict cache to ensure fresh data
-            transactionCountService.evictTotalCountCache();
             
             log.info("Updated transaction summary: +{} transactions for {} (total: {})",
                      transactionCount, date, summary.getTotalTransactionCount());

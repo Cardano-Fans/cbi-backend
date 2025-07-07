@@ -7,8 +7,6 @@ import de.crfa.cbi.repository.TransactionDayCountRepository;
 import de.crfa.cbi.repository.TransactionEpochCountRepository;
 import de.crfa.cbi.repository.TransactionSummaryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,12 +84,6 @@ public class TransactionCountService {
         return transactionEpochCountRepository.findEpochsWithNonZeroTransactions();
     }
 
-    @CacheEvict(value = "transaction-counts", key = "'total-count'")
-    public void evictTotalCountCache() {
-        // Cache eviction method to be called when summary is updated
-    }
-
-    @Cacheable(value = "transaction-counts", key = "'total-count'")
     public Map<String, Object> getTotalTransactionCount() {
         Map<String, Object> result = new HashMap<>();
         TransactionSummary summary = transactionSummaryRepository.findSummary().orElse(null);
@@ -111,7 +103,6 @@ public class TransactionCountService {
         return result;
     }
 
-    @Cacheable(value = "transaction-counts", key = "'date-range-' + #startDate + '-' + #endDate")
     public Map<String, Object> getTransactionCountSummary(LocalDate startDate, LocalDate endDate) {
         Map<String, Object> result = new HashMap<>();
         
