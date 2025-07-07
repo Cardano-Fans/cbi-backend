@@ -51,7 +51,7 @@ public class TransactionCountController {
 
         return ResponseEntity.ok(result);
     }
-    
+
     @PostMapping("/reset/date-range")
     public ResponseEntity<String> resetDayCountsForDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -75,6 +75,21 @@ public class TransactionCountController {
         List<Integer> epochs = transactionCountService.getEpochsWithData();
 
         return ResponseEntity.ok(epochs);
+    }
+
+    @GetMapping("/count/total")
+    public ResponseEntity<Map<String, Object>> getTotalTransactionCount() {
+        Map<String, Object> result = transactionCountService.getTotalTransactionCount();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/count/summary")
+    public ResponseEntity<Map<String, Object>> getTransactionCountSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Map<String, Object> result = transactionCountService.getTransactionCountSummary(startDate, endDate);
+
+        return ResponseEntity.ok(result);
     }
 
 }

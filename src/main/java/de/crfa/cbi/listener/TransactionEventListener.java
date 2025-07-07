@@ -5,6 +5,8 @@ import de.crfa.cbi.entity.TransactionDayCount;
 import de.crfa.cbi.entity.TransactionEpochCount;
 import de.crfa.cbi.repository.TransactionDayCountRepository;
 import de.crfa.cbi.repository.TransactionEpochCountRepository;
+import de.crfa.cbi.repository.TransactionSummaryRepository;
+import de.crfa.cbi.service.TransactionCountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,12 @@ public class TransactionEventListener {
     
     @Autowired
     private TransactionEpochCountRepository transactionEpochCountRepository;
+    
+    @Autowired
+    private TransactionSummaryRepository transactionSummaryRepository;
+    
+    @Autowired
+    private TransactionCountService transactionCountService;
 
     @EventListener
     @Transactional
@@ -43,6 +51,8 @@ public class TransactionEventListener {
             updateDayCount(event, transactionCount);
             // Update epoch count
             updateEpochCount(event, transactionCount);
+            // Update summary count
+            updateSummaryCount(event, transactionCount);
         } catch (Exception e) {
             log.error("Error processing transaction event for block: {}", 
                      event.getMetadata().getBlockHash(), e);
@@ -61,7 +71,8 @@ public class TransactionEventListener {
         dayCount.setLastUpdated(System.currentTimeMillis());
         
         transactionDayCountRepository.save(dayCount);
-        log.info("Updated day count for {}: {} (+{})", date, dayCount.getTransactionCount(), transactionCount);
+
+        log.debug("Updated day count for {}: {} (+{})", date, dayCount.getTransactionCount(), transactionCount);
     }
 
     private void updateEpochCount(TransactionEvent event, int transactionCount) {
@@ -75,5 +86,46 @@ public class TransactionEventListener {
         
         transactionEpochCountRepository.save(epochCount);
         log.trace("Updated epoch count for {}: {} (+{})", epoch, epochCount.getTransactionCount(), transactionCount);
+    }
+
+    private void updateSummaryCount(TransactionEvent event, int transactionCount) {
+        LocalDate date = Instant.ofEpochSecond(event.getMetadata().getBlockTime())
+            .atZone(ZoneOffset.UTC)
+            .toLocalDate();
+        
+        long timestamp = System.currentTimeMillis();
+        
+        try {
+            // Fetch existing summary or create new one
+            var summary = transactionSummaryRepository.findOrCreateSummary();
+            
+            // Update total count
+            summary.setTotalTransactionCount(summary.getTotalTransactionCount() + transactionCount);
+            
+            // Update first date if needed
+            if (summary.getFirstTransactionDate() == null || date.isBefore(summary.getFirstTransactionDate())) {
+                summary.setFirstTransactionDate(date);
+            }
+            
+            // Update last date if needed  
+            if (summary.getLastTransactionDate() == null || date.isAfter(summary.getLastTransactionDate())) {
+                summary.setLastTransactionDate(date);
+            }
+            
+            // Update timestamp
+            summary.setLastUpdated(timestamp);
+            
+            // Save the updated entity
+            transactionSummaryRepository.save(summary);
+            
+            // Evict cache to ensure fresh data
+            transactionCountService.evictTotalCountCache();
+            
+            log.info("Updated transaction summary: +{} transactions for {} (total: {})",
+                     transactionCount, date, summary.getTotalTransactionCount());
+                     
+        } catch (Exception e) {
+            log.error("Failed to update transaction summary for {} transactions on {}", transactionCount, date, e);
+        }
     }
 }
